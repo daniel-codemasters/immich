@@ -112,6 +112,57 @@ class SystemConfigApi {
     return null;
   }
 
+  /// Get storage template devices
+  ///
+  /// List upload devices that can be mapped to folder names via the storage template.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getStorageTemplateDevicesWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/system-config/storage-template-devices';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Get storage template devices
+  ///
+  /// List upload devices that can be mapped to folder names via the storage template.
+  Future<List<StorageTemplateDeviceDto>?> getStorageTemplateDevices() async {
+    final response = await getStorageTemplateDevicesWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<StorageTemplateDeviceDto>') as List)
+        .cast<StorageTemplateDeviceDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
   /// Get storage template options
   ///
   /// Retrieve exemplary storage template options.

@@ -145,4 +145,11 @@ export class AssetTable {
 
   @Column({ type: 'boolean', default: false })
   isEdited!: Generated<boolean>;
+
+  // ----------- daniel -------------
+  // Technical device identifier (FlutterUdid) of the client that uploaded the asset.
+  // Used by the storage template `{{device}}` variable to separate uploads per device.
+  @Column({ type: 'character varying', nullable: true })
+  deviceId!: string | null;
+  // ---------------------------------
 }

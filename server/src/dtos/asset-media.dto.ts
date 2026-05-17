@@ -48,6 +48,11 @@ const AssetMediaCreateSchema = AssetMediaBaseSchema.extend({
   isFavorite: stringToBool.optional().describe('Mark as favorite'),
   visibility: AssetVisibilitySchema.optional(),
   livePhotoVideoId: z.uuidv4().optional().describe('Live photo video ID'),
+  // ----------- daniel -------------
+  // Technical device identifier sent by the mobile client; persisted so the
+  // storage template `{{device}}` variable can group uploads per device.
+  deviceId: z.string().max(255).optional().describe('Device ID that uploaded the asset'),
+  // ---------------------------------
   metadata: JsonParsed.pipe(z.array(AssetMetadataUpsertItemSchema)).optional().describe('Asset metadata items'),
   [UploadFieldName.SIDECAR_DATA]: z
     .any()

@@ -52,6 +52,9 @@
         <ul>
           <li>{`{{assetId}}`} - Asset ID</li>
           <li>{`{{assetIdShort}}`} - Asset ID (last 12 characters)</li>
+          <!-- ----------- daniel ------------- -->
+          <li>{`{{device}}`} - Daniel</li>
+          <!-- --------------------------------- -->
         </ul>
       </div>
     </div>

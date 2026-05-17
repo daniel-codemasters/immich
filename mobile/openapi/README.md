@@ -264,6 +264,7 @@ Class | Method | HTTP request | Description
 *SyncApi* | [**sendSyncAck**](doc//SyncApi.md#sendsyncack) | **POST** /sync/ack | Acknowledge changes
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | Get system configuration
 *SystemConfigApi* | [**getConfigDefaults**](doc//SystemConfigApi.md#getconfigdefaults) | **GET** /system-config/defaults | Get system configuration defaults
+*SystemConfigApi* | [**getStorageTemplateDevices**](doc//SystemConfigApi.md#getstoragetemplatedevices) | **GET** /system-config/storage-template-devices | Get storage template devices
 *SystemConfigApi* | [**getStorageTemplateOptions**](doc//SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | Get storage template options
 *SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | Update system configuration
 *SystemMetadataApi* | [**getAdminOnboarding**](doc//SystemMetadataApi.md#getadminonboarding) | **GET** /system-metadata/admin-onboarding | Retrieve admin onboarding
@@ -558,6 +559,7 @@ Class | Method | HTTP request | Description
  - [StackUpdateDto](doc//StackUpdateDto.md)
  - [StatisticsSearchDto](doc//StatisticsSearchDto.md)
  - [StorageFolder](doc//StorageFolder.md)
+ - [StorageTemplateDeviceDto](doc//StorageTemplateDeviceDto.md)
  - [SyncAckDeleteDto](doc//SyncAckDeleteDto.md)
  - [SyncAckDto](doc//SyncAckDto.md)
  - [SyncAckSetDto](doc//SyncAckSetDto.md)

@@ -1,7 +1,13 @@
 import { Body, Controller, Get, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { SystemConfigDto, SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
+// ----------- daniel: added StorageTemplateDeviceDto -------------
+import {
+  StorageTemplateDeviceDto,
+  SystemConfigDto,
+  SystemConfigTemplateStorageOptionDto,
+} from 'src/dtos/system-config.dto';
+// ---------------------------------
 import { ApiTag, Permission } from 'src/enum';
 import { Authenticated } from 'src/middleware/auth.guard';
 import { StorageTemplateService } from 'src/services/storage-template.service';
@@ -58,4 +64,16 @@ export class SystemConfigController {
   getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
     return this.storageTemplateService.getStorageTemplateOptions();
   }
+
+  // ----------- daniel -------------
+  @Get('storage-template-devices')
+  @Authenticated({ permission: Permission.SystemConfigRead, admin: true })
+  @Endpoint({
+    summary: 'Get storage template devices',
+    description: 'List upload devices that can be mapped to folder names via the storage template.',
+  })
+  getStorageTemplateDevices(): Promise<StorageTemplateDeviceDto[]> {
+    return this.storageTemplateService.getStorageTemplateDevices();
+  }
+  // ---------------------------------
 }

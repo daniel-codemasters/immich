@@ -614,6 +614,8 @@ export type AssetMetadataUpsertItemDto = {
 export type AssetMediaCreateDto = {
     /** Asset file data */
     assetData: Blob;
+    /** Device ID that uploaded the asset */
+    deviceId?: string;
     /** Duration in milliseconds (for videos) */
     duration?: number;
     /** File creation date */
@@ -2522,6 +2524,10 @@ export type SystemConfigServerDto = {
     publicUsers: boolean;
 };
 export type SystemConfigStorageTemplateDto = {
+    /** Map of upload device IDs to friendly folder names */
+    deviceLabels: {
+        [key: string]: string;
+    };
     /** Enabled */
     enabled: boolean;
     /** Hash verification enabled */
@@ -2576,6 +2582,14 @@ export type SystemConfigDto = {
     theme: SystemConfigThemeDto;
     trash: SystemConfigTrashDto;
     user: SystemConfigUserDto;
+};
+export type StorageTemplateDeviceDto = {
+    /** Number of assets uploaded by this device */
+    assetCount: number;
+    /** Technical device identifier */
+    deviceId: string;
+    /** ISO timestamp of the most recent upload from this device */
+    lastUploadAt: string;
 };
 export type SystemConfigTemplateStorageOptionDto = {
     /** Available day format options for storage template */
@@ -6105,6 +6119,17 @@ export function getConfigDefaults(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: SystemConfigDto;
     }>("/system-config/defaults", {
+        ...opts
+    }));
+}
+/**
+ * Get storage template devices
+ */
+export function getStorageTemplateDevices(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: StorageTemplateDeviceDto[];
+    }>("/system-config/storage-template-devices", {
         ...opts
     }));
 }

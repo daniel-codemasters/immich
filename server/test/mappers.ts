@@ -32,6 +32,9 @@ export const getForStorageTemplate = (asset: ReturnType<AssetFactory['build']>) 
     model: asset.exifInfo.model,
     lensModel: asset.exifInfo.lensModel,
     isEdited: asset.isEdited,
+    // ----------- daniel -------------
+    deviceId: asset.deviceId,
+    // ---------------------------------
   };
 };
 

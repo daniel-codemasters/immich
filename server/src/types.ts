@@ -485,6 +485,9 @@ export type StorageAsset = {
   make: string | null;
   model: string | null;
   lensModel: string | null;
+  // ----------- daniel -------------
+  deviceId: string | null;
+  // ---------------------------------
 };
 
 export type OnThisDayData = { year: number };

@@ -260,6 +260,77 @@ describe(StorageTemplateService.name, () => {
       });
     });
 
+    // ----------- daniel -------------
+    it('should put the asset in a device folder using the {{device}} variable', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from({ deviceId: 'phone-abc' }).owner(user).exif().build();
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '{{device}}/{{filename}}';
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.systemMetadata.get.mockResolvedValue({
+        storageTemplate: { enabled: true, deviceLabels: { 'phone-abc': 'Daniel' } },
+      });
+      mocks.user.get.mockResolvedValue(user);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(asset));
+
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
+
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: asset.id,
+        newPath: expect.stringContaining(`/data/library/${user.id}/Daniel/${asset.originalFileName}`),
+        oldPath: asset.originalPath,
+        pathType: AssetPathType.Original,
+      });
+    });
+
+    it('should leave the {{device}} variable empty for an unmapped device', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from({ deviceId: 'unknown-phone' }).owner(user).exif().build();
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '{{device}}/{{filename}}';
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.systemMetadata.get.mockResolvedValue({
+        storageTemplate: { enabled: true, deviceLabels: { 'phone-abc': 'Daniel' } },
+      });
+      mocks.user.get.mockResolvedValue(user);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(asset));
+
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
+
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: asset.id,
+        newPath: expect.stringContaining(`/data/library/${user.id}/${asset.originalFileName}`),
+        oldPath: asset.originalPath,
+        pathType: AssetPathType.Original,
+      });
+    });
+
+    it('should sanitize the {{device}} folder name', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from({ deviceId: 'phone-abc' }).owner(user).exif().build();
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '{{device}}/{{filename}}';
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.systemMetadata.get.mockResolvedValue({
+        storageTemplate: { enabled: true, deviceLabels: { 'phone-abc': '../Daniel' } },
+      });
+      mocks.user.get.mockResolvedValue(user);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(asset));
+
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
+
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: asset.id,
+        newPath: expect.stringContaining(`/data/library/${user.id}/Daniel/${asset.originalFileName}`),
+        oldPath: asset.originalPath,
+        pathType: AssetPathType.Original,
+      });
+    });
+    // ---------------------------------
+
     it('should handle album startDate', async () => {
       const user = UserFactory.create();
       const asset = AssetFactory.from().owner(user).exif().build();

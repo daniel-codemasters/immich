@@ -12445,6 +12445,45 @@
         "x-immich-state": "Stable"
       }
     },
+    "/system-config/storage-template-devices": {
+      "get": {
+        "description": "List upload devices that can be mapped to folder names via the storage template.",
+        "operationId": "getStorageTemplateDevices",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StorageTemplateDeviceDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get storage template devices",
+        "tags": [
+          "System config"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "systemConfig.read"
+      }
+    },
     "/system-config/storage-template-options": {
       "get": {
         "description": "Retrieve exemplary storage template options.",
@@ -16226,6 +16265,11 @@
           "assetData": {
             "description": "Asset file data",
             "format": "binary",
+            "type": "string"
+          },
+          "deviceId": {
+            "description": "Device ID that uploaded the asset",
+            "maxLength": 255,
             "type": "string"
           },
           "duration": {
@@ -22250,6 +22294,30 @@
         ],
         "type": "string"
       },
+      "StorageTemplateDeviceDto": {
+        "properties": {
+          "assetCount": {
+            "description": "Number of assets uploaded by this device",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "deviceId": {
+            "description": "Technical device identifier",
+            "type": "string"
+          },
+          "lastUploadAt": {
+            "description": "ISO timestamp of the most recent upload from this device",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetCount",
+          "deviceId",
+          "lastUploadAt"
+        ],
+        "type": "object"
+      },
       "SyncAckDeleteDto": {
         "properties": {
           "types": {
@@ -24643,6 +24711,13 @@
       },
       "SystemConfigStorageTemplateDto": {
         "properties": {
+          "deviceLabels": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Map of upload device IDs to friendly folder names",
+            "type": "object"
+          },
           "enabled": {
             "description": "Enabled",
             "type": "boolean"
@@ -24657,6 +24732,7 @@
           }
         },
         "required": [
+          "deviceLabels",
           "enabled",
           "hashVerificationEnabled",
           "template"

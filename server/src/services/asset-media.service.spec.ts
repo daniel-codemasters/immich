@@ -167,6 +167,9 @@ const assetEntity = Object.freeze({
     longitude: 10.703_075,
   },
   livePhotoVideoId: null,
+  // ----------- daniel -------------
+  deviceId: null,
+  // ---------------------------------
 } as MapAsset);
 
 describe(AssetMediaService.name, () => {

@@ -336,6 +336,9 @@ export class AssetMediaService extends BaseService {
       visibility: dto.visibility ?? AssetVisibility.Timeline,
       livePhotoVideoId: dto.livePhotoVideoId,
       originalFileName: dto.filename || file.originalName,
+      // ----------- daniel -------------
+      deviceId: dto.deviceId || null,
+      // ---------------------------------
     });
 
     if (dto.metadata?.length) {

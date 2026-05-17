@@ -13,10 +13,14 @@ part of openapi.api;
 class SystemConfigStorageTemplateDto {
   /// Returns a new [SystemConfigStorageTemplateDto] instance.
   SystemConfigStorageTemplateDto({
+    this.deviceLabels = const {},
     required this.enabled,
     required this.hashVerificationEnabled,
     required this.template,
   });
+
+  /// Map of upload device IDs to friendly folder names
+  Map<String, String> deviceLabels;
 
   /// Enabled
   bool enabled;
@@ -29,6 +33,7 @@ class SystemConfigStorageTemplateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigStorageTemplateDto &&
+    _deepEquality.equals(other.deviceLabels, deviceLabels) &&
     other.enabled == enabled &&
     other.hashVerificationEnabled == hashVerificationEnabled &&
     other.template == template;
@@ -36,15 +41,17 @@ class SystemConfigStorageTemplateDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (deviceLabels.hashCode) +
     (enabled.hashCode) +
     (hashVerificationEnabled.hashCode) +
     (template.hashCode);
 
   @override
-  String toString() => 'SystemConfigStorageTemplateDto[enabled=$enabled, hashVerificationEnabled=$hashVerificationEnabled, template=$template]';
+  String toString() => 'SystemConfigStorageTemplateDto[deviceLabels=$deviceLabels, enabled=$enabled, hashVerificationEnabled=$hashVerificationEnabled, template=$template]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'deviceLabels'] = this.deviceLabels;
       json[r'enabled'] = this.enabled;
       json[r'hashVerificationEnabled'] = this.hashVerificationEnabled;
       json[r'template'] = this.template;
@@ -60,6 +67,7 @@ class SystemConfigStorageTemplateDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigStorageTemplateDto(
+        deviceLabels: mapCastOfType<String, String>(json, r'deviceLabels')!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         hashVerificationEnabled: mapValueOfType<bool>(json, r'hashVerificationEnabled')!,
         template: mapValueOfType<String>(json, r'template')!,
@@ -110,6 +118,7 @@ class SystemConfigStorageTemplateDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'deviceLabels',
     'enabled',
     'hashVerificationEnabled',
     'template',

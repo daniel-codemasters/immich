@@ -125,6 +125,10 @@ export type SystemConfig = {
     enabled: boolean;
     hashVerificationEnabled: boolean;
     template: string;
+    // ----------- daniel -------------
+    // Map of upload device ID -> friendly folder name, used by the `{{device}}` template variable.
+    deviceLabels: Record<string, string>;
+    // ---------------------------------
   };
   image: {
     thumbnail: ImageOptions;
@@ -319,6 +323,9 @@ export const defaults = Object.freeze<SystemConfig>({
     enabled: false,
     hashVerificationEnabled: true,
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+    // ----------- daniel -------------
+    deviceLabels: {},
+    // ---------------------------------
   },
   image: {
     thumbnail: {

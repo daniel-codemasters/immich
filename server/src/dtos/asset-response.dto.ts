@@ -154,6 +154,10 @@ export type MapAsset = {
   width: number | null;
   height: number | null;
   isEdited: boolean;
+  // ----------- daniel -------------
+  // Mirrors the asset table column; not exposed in AssetResponseDto.
+  deviceId: string | null;
+  // ---------------------------------
 };
 
 export type AssetMapOptions = {

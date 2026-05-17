@@ -74,6 +74,9 @@ export class AssetFactory {
       width: null,
       height: null,
       isEdited: false,
+      // ----------- daniel -------------
+      deviceId: null,
+      // ---------------------------------
       ...dto,
     });
   }

@@ -658,6 +658,8 @@ class ApiClient {
           return StatisticsSearchDto.fromJson(value);
         case 'StorageFolder':
           return StorageFolderTypeTransformer().decode(value);
+        case 'StorageTemplateDeviceDto':
+          return StorageTemplateDeviceDto.fromJson(value);
         case 'SyncAckDeleteDto':
           return SyncAckDeleteDto.fromJson(value);
         case 'SyncAckDto':

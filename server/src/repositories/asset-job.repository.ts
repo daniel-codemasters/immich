@@ -388,6 +388,9 @@ export class AssetJobRepository {
         'asset_exif.make',
         'asset_exif.model',
         'asset_exif.lensModel',
+        // ----------- daniel -------------
+        'asset.deviceId',
+        // ---------------------------------
       ])
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .where('asset.deletedAt', 'is', null);

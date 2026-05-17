@@ -444,6 +444,24 @@ export class AssetRepository {
     return ids.map(({ id }) => id);
   }
 
+  // ----------- daniel -------------
+  // Distinct upload device IDs across all assets, so an admin can build the
+  // storage template `{{device}}` -> friendly folder name map.
+  @GenerateSql()
+  getDistinctDeviceIds() {
+    return this.db
+      .selectFrom('asset')
+      .select('asset.deviceId')
+      .select((eb) => eb.fn.countAll<number>().as('assetCount'))
+      .select((eb) => eb.fn.max('asset.createdAt').as('lastUploadAt'))
+      .where('asset.deviceId', 'is not', null)
+      .where('asset.deletedAt', 'is', null)
+      .groupBy('asset.deviceId')
+      .orderBy('lastUploadAt', 'desc')
+      .execute();
+  }
+  // ---------------------------------
+
   @GenerateSql({ params: [DummyValue.UUID, { year: 2000, day: 1, month: 1 }] })
   getByDayOfYear(ownerIds: string[], { year, day, month }: YearMonthDay) {
     return this.db

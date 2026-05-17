@@ -38,3 +38,21 @@ If you want to store assets in album folders, but you also have assets that do n
 ```
 {{y}}/{{#if album}}{{album}}{{else}}Other{{/if}}/{{MM}}/{{filename}}
 ```
+
+<!-- ----------- daniel ------------- -->
+
+## Separating uploads per device (`{{device}}`)
+
+When multiple devices upload to the **same user account** (for example, two phones sharing one library), the `{{device}}` variable can place each device's files in its own folder.
+
+Each upload records the technical device identifier sent by the client. In `Administration -> Settings -> Storage Template`, the **Device folders** section lists every device that has uploaded and lets you map its identifier to a friendly folder name. `{{device}}` then renders that name (sanitized like `{{album}}`).
+
+A device that has no mapping renders an empty value, so it produces no folder segment. Because the device identifier is only stored from the moment this feature ships, assets uploaded earlier have no device information. Use a conditional fallback so those (and any unmapped device) still get a sensible path:
+
+```
+{{#if device}}{{device}}{{else}}Shared{{/if}}/{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}
+```
+
+Run the `Storage Template Migration` job after mapping devices to apply the change to existing assets.
+
+<!-- --------------------------------- -->

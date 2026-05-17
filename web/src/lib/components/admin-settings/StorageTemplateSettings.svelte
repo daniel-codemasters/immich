@@ -1,4 +1,7 @@
 <script lang="ts">
+  // ----------- daniel -------------
+  import DeviceLabelsEditor from '$lib/components/admin-settings/DeviceLabelsEditor.svelte';
+  // ---------------------------------
   import SupportedDatetimePanel from '$lib/components/admin-settings/SupportedDatetimePanel.svelte';
   import SupportedVariablesPanel from '$lib/components/admin-settings/SupportedVariablesPanel.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
@@ -63,6 +66,9 @@
       make: 'FUJIFILM',
       model: 'X-T50',
       lensModel: 'XF27mm F2.8 R WR',
+      // ----------- daniel -------------
+      device: 'iPhone 15',
+      // ---------------------------------
     };
 
     const dt = luxon.DateTime.fromISO(new Date('2022-02-03T04:56:05.250').toISOString());
@@ -163,6 +169,12 @@
         <section class="support-date">
           <SupportedVariablesPanel />
         </section>
+
+        <!-- ----------- daniel ------------- -->
+        <section class="support-date">
+          <DeviceLabelsEditor bind:deviceLabels={configToEdit.storageTemplate.deviceLabels} {disabled} />
+        </section>
+        <!-- --------------------------------- -->
 
         <div class="mt-2 flex flex-col">
           <!-- <h3 class="text-base font-medium text-primary">{$t('template')}</h3> -->

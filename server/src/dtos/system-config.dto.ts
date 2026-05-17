@@ -286,6 +286,9 @@ const SystemConfigStorageTemplateSchema = z
     enabled: configBool.describe('Enabled'),
     hashVerificationEnabled: configBool.describe('Hash verification enabled'),
     template: z.string().describe('Template'),
+    // ----------- daniel -------------
+    deviceLabels: z.record(z.string(), z.string()).describe('Map of upload device IDs to friendly folder names'),
+    // ---------------------------------
   })
   .meta({ id: 'SystemConfigStorageTemplateDto' });
 
@@ -301,6 +304,17 @@ const SystemConfigTemplateStorageOptionSchema = z
     presetOptions: z.array(z.string()).describe('Available preset template options'),
   })
   .meta({ id: 'SystemConfigTemplateStorageOptionDto' });
+
+// ----------- daniel -------------
+// One discovered upload device, used to populate the storage template device map.
+const StorageTemplateDeviceSchema = z
+  .object({
+    deviceId: z.string().describe('Technical device identifier'),
+    assetCount: z.number().int().describe('Number of assets uploaded by this device'),
+    lastUploadAt: z.string().describe('ISO timestamp of the most recent upload from this device'),
+  })
+  .meta({ id: 'StorageTemplateDeviceDto' });
+// ---------------------------------
 
 const SystemConfigThemeSchema = z
   .object({ customCss: z.string().describe('Custom CSS for theming') })
@@ -378,6 +392,9 @@ export class SystemConfigFFmpegDto extends createZodDto(SystemConfigFFmpegSchema
 export class SystemConfigSmtpDto extends createZodDto(SystemConfigSmtpSchema) {}
 export class SystemConfigTemplateStorageOptionDto extends createZodDto(SystemConfigTemplateStorageOptionSchema) {}
 export class SystemConfigDto extends createZodDto(SystemConfigSchema) {}
+// ----------- daniel -------------
+export class StorageTemplateDeviceDto extends createZodDto(StorageTemplateDeviceSchema) {}
+// ---------------------------------
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {
   return config;

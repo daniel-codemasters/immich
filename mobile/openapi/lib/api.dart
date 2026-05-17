@@ -306,6 +306,7 @@ part 'model/stack_response_dto.dart';
 part 'model/stack_update_dto.dart';
 part 'model/statistics_search_dto.dart';
 part 'model/storage_folder.dart';
+part 'model/storage_template_device_dto.dart';
 part 'model/sync_ack_delete_dto.dart';
 part 'model/sync_ack_dto.dart';
 part 'model/sync_ack_set_dto.dart';

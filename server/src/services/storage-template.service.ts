@@ -5,7 +5,9 @@ import path from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
-import { SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
+// ----------- daniel: added StorageTemplateDeviceDto -------------
+import { StorageTemplateDeviceDto, SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
+// ---------------------------------
 import {
   AssetFileType,
   AssetPathType,
@@ -59,6 +61,9 @@ const storagePresets = [
 export interface MoveAssetMetadata {
   storageLabel: string | null;
   filename: string;
+  // ----------- daniel -------------
+  deviceLabels: Record<string, string>;
+  // ---------------------------------
 }
 
 interface RenderMetadata {
@@ -71,6 +76,9 @@ interface RenderMetadata {
   make: string | null;
   model: string | null;
   lensModel: string | null;
+  // ----------- daniel -------------
+  device: string | null;
+  // ---------------------------------
 }
 
 @Injectable()
@@ -122,6 +130,9 @@ export class StorageTemplateService extends BaseService {
         make: 'FUJIFILM',
         model: 'X-T50',
         lensModel: 'XF27mm F2.8 R WR',
+        // ----------- daniel -------------
+        device: 'iPhone',
+        // ---------------------------------
       });
     } catch (error) {
       this.logger.warn(`Storage template validation failed: ${JSON.stringify(error)}`);
@@ -132,6 +143,19 @@ export class StorageTemplateService extends BaseService {
   getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
     return { ...storageTokens, presetOptions: storagePresets };
   }
+
+  // ----------- daniel -------------
+  // Lists upload devices seen across all assets so the admin can map each
+  // device ID to a friendly folder name for the `{{device}}` template variable.
+  async getStorageTemplateDevices(): Promise<StorageTemplateDeviceDto[]> {
+    const devices = await this.assetRepository.getDistinctDeviceIds();
+    return devices.map((device) => ({
+      deviceId: String(device.deviceId),
+      assetCount: Number(device.assetCount),
+      lastUploadAt: new Date(device.lastUploadAt).toISOString(),
+    }));
+  }
+  // ---------------------------------
 
   @OnEvent({ name: 'AssetMetadataExtracted' })
   async onAssetMetadataExtracted({ source, assetId }: ArgOf<'AssetMetadataExtracted'>) {
@@ -154,7 +178,10 @@ export class StorageTemplateService extends BaseService {
     const user = await this.userRepository.get(asset.ownerId, {});
     const storageLabel = user?.storageLabel || null;
     const filename = asset.originalFileName || asset.id;
-    await this.moveAsset(asset, { storageLabel, filename });
+    // ----------- daniel -------------
+    const { deviceLabels } = config.storageTemplate;
+    await this.moveAsset(asset, { storageLabel, filename, deviceLabels });
+    // ---------------------------------
 
     // move motion part of live photo
     if (asset.livePhotoVideoId) {
@@ -165,7 +192,9 @@ export class StorageTemplateService extends BaseService {
         return JobStatus.Failed;
       }
       const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-      await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename }, asset);
+      // ----------- daniel -------------
+      await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename, deviceLabels }, asset);
+      // ---------------------------------
     }
     return JobStatus.Success;
   }
@@ -174,7 +203,9 @@ export class StorageTemplateService extends BaseService {
   async handleMigration(): Promise<JobStatus> {
     this.logger.log('Starting storage template migration');
     const { storageTemplate } = await this.getConfig({ withCache: true });
-    const { enabled } = storageTemplate;
+    // ----------- daniel -------------
+    const { enabled, deviceLabels } = storageTemplate;
+    // ---------------------------------
     if (!enabled) {
       this.logger.log('Storage template migration disabled, skipping');
       return JobStatus.Skipped;
@@ -189,7 +220,9 @@ export class StorageTemplateService extends BaseService {
       const user = users.find((user) => user.id === asset.ownerId);
       const storageLabel = user?.storageLabel || null;
       const filename = asset.originalFileName || asset.id;
-      await this.moveAsset(asset, { storageLabel, filename });
+      // ----------- daniel -------------
+      await this.moveAsset(asset, { storageLabel, filename, deviceLabels });
+      // ---------------------------------
 
       // move motion part of live photo
       if (asset.livePhotoVideoId) {
@@ -198,7 +231,9 @@ export class StorageTemplateService extends BaseService {
         });
         if (livePhotoVideo) {
           const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-          await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename }, asset);
+          // ----------- daniel -------------
+          await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename, deviceLabels }, asset);
+          // ---------------------------------
         }
       }
     }
@@ -322,6 +357,14 @@ export class StorageTemplateService extends BaseService {
         }
       }
 
+      // ----------- daniel -------------
+      // Resolve the friendly device folder name from the admin-configured map.
+      // Uses assetForMetadata so a live photo's still + motion parts share a folder.
+      // Unmapped/unknown devices resolve to null -> empty path segment.
+      const deviceId = assetForMetadata.deviceId;
+      const device = (deviceId && metadata.deviceLabels[deviceId]) || null;
+      // ---------------------------------
+
       // For motion videos that are part of live photos, use the still photo's date
       // to ensure both parts end up in the same folder
       const storagePath = this.render(this.template.compiled, {
@@ -334,6 +377,9 @@ export class StorageTemplateService extends BaseService {
         make: assetForMetadata.make,
         model: assetForMetadata.model,
         lensModel: assetForMetadata.lensModel,
+        // ----------- daniel -------------
+        device,
+        // ---------------------------------
       });
       const fullPath = path.normalize(path.join(rootPath, storagePath));
       let destination = `${fullPath}.${extension}`;
@@ -398,7 +444,10 @@ export class StorageTemplateService extends BaseService {
   }
 
   private render(template: HandlebarsTemplateDelegate<any>, options: RenderMetadata) {
-    const { filename, extension, asset, albumName, albumStartDate, albumEndDate, make, model, lensModel } = options;
+    // ----------- daniel: added `device` -------------
+    const { filename, extension, asset, albumName, albumStartDate, albumEndDate, make, model, lensModel, device } =
+      options;
+    // ---------------------------------
     const substitutions: Record<string, string> = {
       filename,
       ext: extension,
@@ -411,6 +460,10 @@ export class StorageTemplateService extends BaseService {
       make: make ?? '',
       model: model ?? '',
       lensModel: lensModel ?? '',
+      // ----------- daniel -------------
+      // Friendly device folder name; sanitized like `album`. Empty when unmapped.
+      device: (device && sanitize(device.replaceAll(/\.+/g, ''))) || '',
+      // ---------------------------------
     };
 
     const dt = DateTime.fromJSDate(asset.fileCreatedAt);
