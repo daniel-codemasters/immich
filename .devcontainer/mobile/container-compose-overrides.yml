@@ -8,6 +8,7 @@ services:
     image: immich-server-dev:latest
     build:
       target: dev-container-mobile
+    env_file: !reset []
     environment:
       - IMMICH_SERVER_URL=http://127.0.0.1:2283/
     volumes:

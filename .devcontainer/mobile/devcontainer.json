@@ -39,6 +39,11 @@
   "workspaceFolder": "/usr/src/app",
   "remoteUser": "node",
   "userEnvProbe": "loginInteractiveShell",
+  // ----------- daniel -------------
+  // Provision the mobile build toolchain (Flutter 3.41.9 / Android SDK / JDK)
+  // into .mobile-tools on container create. Idempotent — re-runs skip in seconds.
+  "postCreateCommand": "bash .devcontainer/mobile/install-mobile-toolchain.sh",
+  // ---------------------------------
   "remoteEnv": {
     // The location where your uploaded files are stored
     "UPLOAD_LOCATION": "${localEnv:UPLOAD_LOCATION:./library}",
@@ -50,6 +55,22 @@
     //  The database name
     "DB_DATABASE_NAME": "${localEnv:DB_DATABASE_NAME:immich}",
     // Keep Claude Code config on the bind-mounted workspace so it survives rebuilds
-    "CLAUDE_CONFIG_DIR": "/usr/src/app/.claude"
+    "CLAUDE_CONFIG_DIR": "/usr/src/app/.claude",
+    // ----------- daniel -------------
+    // Flutter + Android SDK + JDK live under the bind-mounted workspace
+    // (.mobile-tools) so they survive devcontainer rebuilds. Lets `flutter run`
+    // build for Android. Flutter 3.41.9 here (pinned by mobile/mise.toml) is put
+    // ahead of the image's baked-in /flutter (3.35.7, too old for the project).
+    "FLUTTER_HOME": "/usr/src/app/.mobile-tools/flutter",
+    "JAVA_HOME": "/usr/src/app/.mobile-tools/jdk-21",
+    "ANDROID_HOME": "/usr/src/app/.mobile-tools/android-sdk",
+    "ANDROID_SDK_ROOT": "/usr/src/app/.mobile-tools/android-sdk",
+    // Persist adb keys here so the phone stays authorized across rebuilds
+    "ANDROID_USER_HOME": "/usr/src/app/.mobile-tools/android-user",
+    // Keep Gradle / pub caches on the bind-mount so rebuilds don't re-download
+    "GRADLE_USER_HOME": "/usr/src/app/.mobile-tools/gradle",
+    "PUB_CACHE": "/usr/src/app/.mobile-tools/pub-cache",
+    "PATH": "/usr/src/app/.mobile-tools/flutter/bin:/usr/src/app/.mobile-tools/jdk-21/bin:/usr/src/app/.mobile-tools/android-sdk/platform-tools:/usr/src/app/.mobile-tools/android-sdk/cmdline-tools/latest/bin:${containerEnv:PATH}"
+    // ---------------------------------
   }
 }

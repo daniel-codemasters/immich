@@ -33,3 +33,9 @@ vite.config.js.timestamp-*
 
 # Claude Code config dir (credentials, sessions, memory) — must never be committed
 /.claude/
+
+# ----------- daniel -------------
+# Android SDK + JDK for the mobile devcontainer (installed on the bind-mounted
+# workspace so they survive rebuilds) — large, machine-local, never committed
+/.mobile-tools/
+# ---------------------------------
