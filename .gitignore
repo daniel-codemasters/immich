@@ -30,3 +30,6 @@ vite.config.js.timestamp-*
 .devcontainer/.env*
 *.tsbuildinfo
 *.tsbuildInfo
+
+# Claude Code config dir (credentials, sessions, memory) — must never be committed
+/.claude/
