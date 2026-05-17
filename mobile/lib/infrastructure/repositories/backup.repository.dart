@@ -23,10 +23,15 @@ class DriftBackupRepository extends DriftDatabaseRepository {
   // ----------- daniel -------------
   /// Backup cutoff date — assets created before it are skipped (assumed already
   /// backed up elsewhere). Configured via [AppSettingsEnum.backupCutoffDate].
-  /// Returns null when no cutoff is set (back up everything).
+  /// Returns null when no cutoff is set, or when the Store is not initialised
+  /// (e.g. in repository unit tests) — failing open so backup is never reduced.
   DateTime? _backupCutoff() {
-    final ms = Store.get(StoreKey.backupCutoffDate, 0);
-    return ms > 0 ? DateTime.fromMillisecondsSinceEpoch(ms) : null;
+    try {
+      final ms = Store.get(StoreKey.backupCutoffDate, 0);
+      return ms > 0 ? DateTime.fromMillisecondsSinceEpoch(ms) : null;
+    } on UnsupportedError {
+      return null;
+    }
   }
   // ---------------------------------
 
