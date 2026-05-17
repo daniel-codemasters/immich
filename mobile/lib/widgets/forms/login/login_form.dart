@@ -9,6 +9,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
+// ----------- daniel -------------
+import 'package:flutter_udid/flutter_udid.dart';
+// ---------------------------------
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -82,6 +85,33 @@ class LoginForm extends HookConsumerWidget {
     final warningMessage = useState<String?>(null);
     final loginFormKey = GlobalKey<FormState>();
     final ValueNotifier<String?> serverEndpoint = useState<String?>(null);
+
+    // ----------- daniel -------------
+    // Device ID (FlutterUdid) — the same value the app sends as asset.deviceId,
+    // consumed by the server's {{device}} storage-template mapping. Exposed on
+    // the server-URL screen so it can be copied and configured on the server.
+    final deviceId = useState<String?>(null);
+    useEffect(() {
+      FlutterUdid.consistentUdid.then((id) {
+        deviceId.value = Store.tryGet(StoreKey.deviceId) ?? id;
+      });
+      return null;
+    }, const []);
+
+    copyDeviceId() async {
+      final id = deviceId.value;
+      if (id == null) {
+        return;
+      }
+      await Clipboard.setData(ClipboardData(text: id));
+      ImmichToast.show(
+        context: context,
+        msg: 'Device ID copied: $id',
+        toastType: ToastType.info,
+        gravity: ToastGravity.TOP,
+      );
+    }
+    // ---------------------------------
 
     checkVersionMismatch() async {
       try {
@@ -412,6 +442,14 @@ class LoginForm extends HookConsumerWidget {
                     onSubmit: (ctx, _) => ImmichForm.of(ctx).submit(),
                   ),
                 ),
+                // ----------- daniel -------------
+                ImmichTextButton(
+                  labelText: 'Copy device ID',
+                  icon: Icons.copy_rounded,
+                  variant: ImmichVariant.ghost,
+                  onPressed: copyDeviceId,
+                ),
+                // ---------------------------------
                 ImmichTextButton(
                   labelText: 'settings'.t(context: context),
                   icon: Icons.settings,
