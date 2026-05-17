@@ -56,6 +56,16 @@ export const updateConfig = async (repos: RepoDeps, newConfig: SystemConfig): Pr
     _.set(partialConfig, property, newValue);
   }
 
+  // ----------- daniel -------------
+  // `storageTemplate.deviceLabels` is a dynamic-keyed map whose default is {}.
+  // getKeysDeep(defaults) yields no keys for an empty object, so the diff loop
+  // above never copies it into partialConfig and the map is silently dropped on
+  // save. Diff the whole map explicitly so admin-defined device folders persist.
+  if (!_.isEqual(newConfig.storageTemplate.deviceLabels, defaults.storageTemplate.deviceLabels)) {
+    _.set(partialConfig, 'storageTemplate.deviceLabels', newConfig.storageTemplate.deviceLabels);
+  }
+  // ---------------------------------
+
   await metadataRepo.set(SystemMetadataKey.SystemConfig, partialConfig);
 
   return getConfig(repos, { withCache: false });
@@ -92,6 +102,13 @@ const buildConfig = async (repos: RepoDeps) => {
   for (const property of getKeysDeep(defaults)) {
     unsetDeep(unknownKeys, property);
   }
+
+  // ----------- daniel -------------
+  // `storageTemplate.deviceLabels` is a dynamic-keyed map absent from
+  // getKeysDeep(defaults); exclude it so its stored entries aren't flagged as
+  // unknown keys once they are actually persisted.
+  unsetDeep(unknownKeys, 'storageTemplate.deviceLabels');
+  // ---------------------------------
 
   if (!_.isEmpty(unknownKeys)) {
     logger.warn(`Unknown keys found: ${JSON.stringify(unknownKeys, null, 2)}`);

@@ -145,6 +145,7 @@ inicialização do servidor.
 
 - `server/src/config.ts` — `storageTemplate.deviceLabels`
 - `server/src/dtos/system-config.dto.ts` — schema do mapa + DTO de descoberta
+- `server/src/utils/config.ts` — persiste o mapa ao salvar a config (ver Ressalvas)
 
 **Endpoint de descoberta**
 
@@ -172,6 +173,12 @@ inicialização do servidor.
 
 ### Ressalvas
 
+- O mapa `deviceLabels` precisa de tratamento especial em
+  `server/src/utils/config.ts` (`updateConfig`/`buildConfig`): a config do Immich
+  só persiste chaves enumeradas por `getKeysDeep(defaults)`, e o default
+  `deviceLabels` é `{}` — sem o diff explícito do mapa, os nomes digitados na tela
+  Device folders são descartados ao salvar. Se um update do upstream reescrever
+  `updateConfig`, reaplicar os dois blocos `daniel` neste arquivo.
 - Só vale para uploads feitos **depois** deste deploy — assets antigos têm
   `deviceId` nulo e somem na pasta de fallback.
 - O `deviceId` é um UDID opaco; não é exibido no app. Identifica-se pela
