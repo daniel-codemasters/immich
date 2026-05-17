@@ -7,6 +7,38 @@ projeto upstream. Cada entrada descreve **o quê**, **por quê**, **arquivos
 tocados** e **como verificar/reaplicar** — para sobreviver às atualizações do
 Immich.
 
+## Permissões do git no devcontainer
+
+Se o `git add`/commit falhar com:
+
+> `error: insufficient permission for adding an object to repository database .git/objects`
+
+é porque arquivos em `.git/` ficaram com dono `root` (o git rodou como `root`
+em algum momento) e o devcontainer mobile roda como `node`. Corrija rodando
+**no host** da instância (não no terminal do VSCode, que é `node` e não tem
+permissão):
+
+```bash
+# 1. devolve o dono de todo o .git para o node (precisa de root -> -u 0)
+docker exec -u 0 immich_server chown -R node:node /usr/src/app/.git
+
+# 2. evita repetir: novos objetos passam a ser graváveis por qualquer usuário
+docker exec -u 0 immich_server git config -f /usr/src/app/.git/config core.sharedRepository 0777
+```
+
+Verificar (não deve imprimir nada):
+
+```bash
+docker exec -u 0 immich_server find /usr/src/app/.git ! -user node
+```
+
+Notas:
+
+- Para corrigir o workspace inteiro (não só o `.git`), troque `/usr/src/app/.git`
+  por `/usr/src/app`.
+- Se o container não se chamar `immich_server`: `docker ps --format '{{.Names}}'`.
+- Para não reincidir, faça commits sempre pelo mesmo devcontainer/usuário.
+
 ## Convenção de marcação
 
 Toda alteração nossa fica dentro de um bloco marcado, usando o caractere de
