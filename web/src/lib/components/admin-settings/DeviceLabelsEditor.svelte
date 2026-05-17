@@ -87,12 +87,18 @@
                   </Text>
                 {/if}
               </div>
-              <Input
-                class="sm:w-64"
-                bind:value={deviceLabels[row.deviceId]}
-                placeholder={$t('admin.storage_template_device_label_placeholder')}
-                {disabled}
-              />
+              <!--
+                Input's outer wrapper is hard-coded `w-full` and the `class` prop only
+                reaches its inner box, so sizing must be done on a wrapper div here —
+                otherwise the Input's 100% basis starves the flex-1 device id column to 0.
+              -->
+              <div class="w-full shrink-0 sm:w-64">
+                <Input
+                  bind:value={deviceLabels[row.deviceId]}
+                  placeholder={$t('admin.storage_template_device_label_placeholder')}
+                  {disabled}
+                />
+              </div>
               <IconButton
                 icon={mdiTrashCanOutline}
                 aria-label={$t('remove')}
