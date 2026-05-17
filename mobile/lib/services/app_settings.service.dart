@@ -15,7 +15,11 @@ enum AppSettingsEnum<T> {
   readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false),
   albumGridView<bool>(StoreKey.albumGridView, "albumGridView", false),
   backupRequireCharging<bool>(StoreKey.backupRequireCharging, null, false),
-  backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30);
+  backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30),
+  // ----------- daniel -------------
+  // Epoch millis; only assets created on/after this date are backed up (0 = off)
+  backupCutoffDate<int>(StoreKey.backupCutoffDate, null, 0);
+  // ---------------------------------
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 

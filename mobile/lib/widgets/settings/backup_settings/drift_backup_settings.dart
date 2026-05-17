@@ -48,6 +48,11 @@ class DriftBackupSettings extends ConsumerWidget {
           icon: Icons.sync,
         ),
         const _AlbumSyncActionButton(),
+        // ----------- daniel -------------
+        const Divider(),
+        const SettingGroupTitle(title: "Backup cutoff date", icon: Icons.event_outlined),
+        const _BackupCutoffDateTile(),
+        // ---------------------------------
       ],
     );
   }
@@ -357,3 +362,97 @@ class _BackupDelaySliderState extends ConsumerState<_BackupDelaySlider> {
     );
   }
 }
+
+// ----------- daniel -------------
+/// Settings tile to pick a backup cutoff date. Assets created before the chosen
+/// date are excluded from backup — see DriftBackupRepository (`_backupCutoff`).
+/// Stored as epoch millis in [AppSettingsEnum.backupCutoffDate]; 0 = no cutoff.
+class _BackupCutoffDateTile extends ConsumerStatefulWidget {
+  const _BackupCutoffDateTile();
+
+  @override
+  ConsumerState<_BackupCutoffDateTile> createState() => _BackupCutoffDateTileState();
+}
+
+class _BackupCutoffDateTileState extends ConsumerState<_BackupCutoffDateTile> {
+  late final Stream<int?> valueStream;
+  late final StreamSubscription<int?> subscription;
+  late int currentValue;
+
+  @override
+  void initState() {
+    super.initState();
+    currentValue =
+        Store.tryGet(AppSettingsEnum.backupCutoffDate.storeKey) ?? AppSettingsEnum.backupCutoffDate.defaultValue;
+    valueStream = Store.watch(AppSettingsEnum.backupCutoffDate.storeKey).asBroadcastStream();
+    subscription = valueStream.listen((value) {
+      if (mounted) {
+        setState(() => currentValue = value ?? 0);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    subscription.cancel();
+    super.dispose();
+  }
+
+  String _formatDate(int ms) {
+    final d = DateTime.fromMillisecondsSinceEpoch(ms);
+    final dd = d.day.toString().padLeft(2, '0');
+    final mm = d.month.toString().padLeft(2, '0');
+    return '$dd/$mm/${d.year}';
+  }
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: currentValue > 0 ? DateTime.fromMillisecondsSinceEpoch(currentValue) : now,
+      firstDate: DateTime(1970),
+      lastDate: now,
+    );
+    if (picked == null) {
+      return;
+    }
+    final atMidnight = DateTime(picked.year, picked.month, picked.day);
+    await ref
+        .read(appSettingsServiceProvider)
+        .setSetting(AppSettingsEnum.backupCutoffDate, atMidnight.millisecondsSinceEpoch);
+  }
+
+  Future<void> _clear() {
+    return ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.backupCutoffDate, 0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasCutoff = currentValue > 0;
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0),
+      child: SettingListTile(
+        title: 'Only back up photos from',
+        subtitle: 'Photos taken before this date are skipped (e.g. already backed up elsewhere).',
+        onTap: _pickDate,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              hasCutoff ? _formatDate(currentValue) : 'All photos',
+              style: context.textTheme.bodyMedium?.copyWith(color: context.primaryColor, fontWeight: FontWeight.w600),
+            ),
+            if (hasCutoff)
+              IconButton(
+                icon: const Icon(Icons.clear),
+                iconSize: 20,
+                tooltip: 'Clear',
+                onPressed: _clear,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+// ---------------------------------

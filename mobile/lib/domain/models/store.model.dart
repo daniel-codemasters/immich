@@ -32,6 +32,11 @@ enum StoreKey<T> {
   // Image viewer navigation settings
   tapToNavigate<bool>._(141),
 
+  // ----------- daniel -------------
+  // Backup cutoff: epoch millis; assets created before it are skipped (0 = no cutoff)
+  backupCutoffDate<int>._(142),
+  // ---------------------------------
+
   // Experimental stuff
   enableBackup<bool>._(1003),
   useWifiForUploadVideos<bool>._(1004),
