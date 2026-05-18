@@ -204,4 +204,45 @@ describe(AssetRepository.name, () => {
       ).resolves.toEqual({ lockedProperties: null });
     });
   });
+
+  // ----------- daniel -------------
+  describe('getDistinctDeviceIds', () => {
+    it('should aggregate non-deleted assets per device, newest upload first', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      // Unique device ids so the assertion is isolated from assets created by other tests.
+      const phoneA = `phone-a-${factory.uuid()}`;
+      const phoneB = `phone-b-${factory.uuid()}`;
+
+      await Promise.all([
+        ctx.newAsset({ ownerId: user.id, deviceId: phoneA, createdAt: new Date('2026-05-01T10:00:00.000Z') }),
+        ctx.newAsset({ ownerId: user.id, deviceId: phoneA, createdAt: new Date('2026-05-03T10:00:00.000Z') }),
+        ctx.newAsset({ ownerId: user.id, deviceId: phoneB, createdAt: new Date('2026-05-10T10:00:00.000Z') }),
+        // No device id -> excluded by the `deviceId is not null` filter.
+        ctx.newAsset({ ownerId: user.id, deviceId: null }),
+        // Soft-deleted -> excluded; otherwise phoneA would count 3 and report 2026-05-20.
+        ctx.newAsset({
+          ownerId: user.id,
+          deviceId: phoneA,
+          createdAt: new Date('2026-05-20T10:00:00.000Z'),
+          deletedAt: new Date('2026-05-21T10:00:00.000Z'),
+        }),
+      ]);
+
+      const allDevices = await sut.getDistinctDeviceIds();
+      const devices = allDevices
+        .filter(({ deviceId }) => deviceId === phoneA || deviceId === phoneB)
+        .map(({ deviceId, assetCount, lastUploadAt }) => ({
+          deviceId,
+          assetCount: Number(assetCount),
+          lastUploadAt: new Date(lastUploadAt).toISOString(),
+        }));
+
+      expect(devices).toEqual([
+        { deviceId: phoneB, assetCount: 1, lastUploadAt: '2026-05-10T10:00:00.000Z' },
+        { deviceId: phoneA, assetCount: 2, lastUploadAt: '2026-05-03T10:00:00.000Z' },
+      ]);
+    });
+  });
+  // ---------------------------------
 });

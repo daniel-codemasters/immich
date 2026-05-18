@@ -163,10 +163,15 @@ inicialização do servidor.
 - `server/src/dtos/asset-response.dto.ts` — `deviceId` no tipo `MapAsset`
 - `i18n/en.json` — chaves `admin.storage_template_device_*`
 - `docs/docs/partials/_storage-template.md` — documentação da variável
-- Testes: `server/test/factories/asset.factory.ts`, `server/test/mappers.ts`,
-  `server/test/repositories/asset.repository.mock.ts`, e os specs
-  `storage-template.service.spec.ts` / `asset-media.service.spec.ts` /
-  `system-config.service.spec.ts`
+- Testes: helpers `server/test/factories/asset.factory.ts`, `server/test/mappers.ts`,
+  `server/test/repositories/asset.repository.mock.ts`; specs de unidade
+  `storage-template.service.spec.ts` (variável `{{device}}` +
+  `getStorageTemplateDevices`), `asset-media.service.spec.ts` (captura do
+  `deviceId` no upload), `system-config.service.spec.ts` (persistência e
+  round-trip de `deviceLabels`); spec medium
+  `server/test/medium/specs/repositories/asset.repository.spec.ts`
+  (`getDistinctDeviceIds`); spec web _(novo)_
+  `web/src/lib/components/admin-settings/DeviceLabelsEditor.spec.ts`
 
 **Gerados (regenerar, não editar à mão):** `open-api/immich-openapi-specs.json`,
 `packages/sdk/src/fetch-client.ts`, `mobile/openapi/**`.

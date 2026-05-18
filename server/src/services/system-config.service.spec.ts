@@ -8,6 +8,9 @@ import {
   LogLevel,
   OAuthTokenEndpointAuthMethod,
   QueueName,
+  // ----------- daniel -------------
+  SystemMetadataKey,
+  // ---------------------------------
   ToneMapping,
   TranscodeHardwareAcceleration,
   TranscodePolicy,
@@ -270,6 +273,19 @@ describe(SystemConfigService.name, () => {
       await expect(sut.getSystemConfig()).resolves.toEqual(updatedConfig);
     });
 
+    // ----------- daniel -------------
+    it('should round-trip storageTemplate.deviceLabels without flagging it as an unknown key', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        storageTemplate: { deviceLabels: { 'phone-abc': 'Daniel', 'phone-xyz': 'Maria' } },
+      });
+
+      const config = await sut.getSystemConfig();
+
+      expect(config.storageTemplate.deviceLabels).toEqual({ 'phone-abc': 'Daniel', 'phone-xyz': 'Maria' });
+      expect(mocks.logger.warn).not.toHaveBeenCalled();
+    });
+    // ---------------------------------
+
     it('should load the config from a json file', async () => {
       mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify(partialConfig));
@@ -473,6 +489,34 @@ describe(SystemConfigService.name, () => {
       await expect(sut.updateSystemConfig(defaults)).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.systemMetadata.set).not.toHaveBeenCalled();
     });
+
+    // ----------- daniel -------------
+    it('should persist storageTemplate.deviceLabels even though its default is an empty map', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(partialConfig);
+      const newConfig = structuredClone(updatedConfig) as SystemConfig;
+      newConfig.storageTemplate.deviceLabels = { 'phone-abc': 'Daniel', 'phone-xyz': 'Maria' };
+
+      await sut.updateSystemConfig(newConfig);
+
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(
+        SystemMetadataKey.SystemConfig,
+        expect.objectContaining({
+          storageTemplate: expect.objectContaining({
+            deviceLabels: { 'phone-abc': 'Daniel', 'phone-xyz': 'Maria' },
+          }),
+        }),
+      );
+    });
+
+    it('should not persist deviceLabels when it matches the empty-map default', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(partialConfig);
+
+      await sut.updateSystemConfig(structuredClone(updatedConfig) as SystemConfig);
+
+      const [, persisted] = mocks.systemMetadata.set.mock.calls.at(-1)!;
+      expect((persisted as DeepPartial<SystemConfig>).storageTemplate?.deviceLabels).toBeUndefined();
+    });
+    // ---------------------------------
   });
 
   describe('getCustomCss', () => {

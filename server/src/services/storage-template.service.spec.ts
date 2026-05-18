@@ -94,6 +94,37 @@ describe(StorageTemplateService.name, () => {
     });
   });
 
+  // ----------- daniel -------------
+  describe('getStorageTemplateDevices', () => {
+    it('should map distinct device rows to the discovery dto', async () => {
+      const lastUploadAt = new Date('2026-05-01T12:00:00.000Z');
+      mocks.asset.getDistinctDeviceIds.mockResolvedValue([{ deviceId: 'phone-abc', assetCount: 42, lastUploadAt }]);
+
+      await expect(sut.getStorageTemplateDevices()).resolves.toEqual([
+        { deviceId: 'phone-abc', assetCount: 42, lastUploadAt: lastUploadAt.toISOString() },
+      ]);
+      expect(mocks.asset.getDistinctDeviceIds).toHaveBeenCalled();
+    });
+
+    it('should return an empty list when no device has uploaded', async () => {
+      mocks.asset.getDistinctDeviceIds.mockResolvedValue([]);
+
+      await expect(sut.getStorageTemplateDevices()).resolves.toEqual([]);
+    });
+
+    it('should coerce the bigint asset count returned by postgres into a number', async () => {
+      mocks.asset.getDistinctDeviceIds.mockResolvedValue([
+        { deviceId: 'phone-xyz', assetCount: '7' as any, lastUploadAt: new Date('2026-05-10T08:30:00.000Z') },
+      ]);
+
+      const [device] = await sut.getStorageTemplateDevices();
+
+      expect(device.assetCount).toBe(7);
+      expect(typeof device.assetCount).toBe('number');
+    });
+  });
+  // ---------------------------------
+
   describe('handleMigrationSingle', () => {
     it('should skip when storage template is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: false } });

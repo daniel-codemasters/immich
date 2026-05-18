@@ -350,6 +350,42 @@ describe(AssetMediaService.name, () => {
       );
     });
 
+    // ----------- daniel -------------
+    it('should persist the deviceId from the upload dto', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 42,
+      };
+
+      mocks.asset.create.mockResolvedValue(assetEntity);
+
+      await sut.uploadAsset(authStub.user1, { ...createDto, deviceId: 'phone-abc' }, file);
+
+      expect(mocks.asset.create).toHaveBeenCalledWith(expect.objectContaining({ deviceId: 'phone-abc' }));
+    });
+
+    it('should default deviceId to null when the upload dto omits it', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 42,
+      };
+
+      mocks.asset.create.mockResolvedValue(assetEntity);
+
+      await sut.uploadAsset(authStub.user1, createDto, file);
+
+      expect(mocks.asset.create).toHaveBeenCalledWith(expect.objectContaining({ deviceId: null }));
+    });
+    // ---------------------------------
+
     it('should handle a duplicate', async () => {
       const file = {
         uuid: 'random-uuid',
